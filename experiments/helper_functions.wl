@@ -7,8 +7,7 @@
 (* Ensure NeuralNet is defined before calling this *)
 ClearAll[InitializeBrain]
 InitializeBrain::usage = "InitializeBrain[] created a directed Barabasi-Albert graph with sorted vertices, ensuring no self-loops, and initializes a NeuralNet.";
-InitializeBrain[opts : OptionsPattern[]] := With[{n = 20, k = 2},
-  NeuralNet[
+InitializeBrain[{n_Integer:10,k_Integer:3},opts : OptionsPattern[]] := NeuralNet[
    (*Generate a Barabasi Albert graph with the chosen parameters:*)
    RandomGraph[BarabasiAlbertGraphDistribution[n, k]] //
      (*Convert edges to directed edges and indexed vertices::*)
@@ -19,4 +18,4 @@ InitializeBrain[opts : OptionsPattern[]] := With[{n = 20, k = 2},
           1 \[DirectedEdge] n | n \[DirectedEdge] 1] &)] &,
    opts,
    "InitialActivationFunction" -> (RandomVariate[NormalDistribution[0, .25]] &)
-   ]];
+   ];

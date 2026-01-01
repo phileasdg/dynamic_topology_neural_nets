@@ -67,8 +67,8 @@ Get["../analysis_tools.wl"];
 
 
 SeedRandom[1234];
-ClearAll[brain];
-brain = InitializeBrain["InitialActivationFunction"->(RandomVariate[NormalDistribution[0,.25]]&)]
+ClearAll[brain]
+brain = InitializeBrain[{20,2},"InitialActivationFunction"->(RandomVariate[NormalDistribution[0,.25]]&)]
 Echo[EdgeCount[brain["network"]], "Initial Edges:"];
 Echo[Mean[Abs[brain["activation"]]], "Initial Mean Activation:"];
 
@@ -82,7 +82,7 @@ Echo[Mean[Abs[brain["activation"]]], "Initial Mean Activation:"];
 
 
 Echo["Running Simulation..."];
-ClearAll[nSteps, history];
+ClearAll[nSteps, history]
 nSteps = 50;
 history = NestList[
 	Step[#, 0, 0, "LeakRate" -> 0.1, "SurvivalThreshold" -> 0.005]&, 
@@ -110,6 +110,7 @@ Last[history]
 (*Question: In this scenario, how did the activations change over time? *)
 
 
+ClearAll[activationsPlot]
 activationsPlot=Framed[ListPlot[
 	Transpose[history[[All,"activation"]]],
 	Joined->True,PlotLegends->Range[VertexCount[brain["network"]]],
@@ -124,6 +125,7 @@ activationsPlot=Framed[ListPlot[
 (*We can also visualise the evolution of neural activations as a spacetime plot:*)
 
 
+ClearAll[raster]
 raster=Framed[ArrayPlot[history[[All,"activation"]],
 	PlotLabel->Style["Activation history\n",14],
 	FrameLabel->{Style["Time",14],Style["Neuron index",14]},
@@ -135,7 +137,7 @@ raster=Framed[ArrayPlot[history[[All,"activation"]],
 (*Answer: We expected that activations would leak to zero, and they did.*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Edges*)
 
 
@@ -143,20 +145,68 @@ raster=Framed[ArrayPlot[history[[All,"activation"]],
 (*Question: How did the number of edges change over time?*)
 
 
+ClearAll[edgePlot]
 edgePlot=Framed[
 	ListPlot[
 		Normal[Dataset[history][All,EdgeCount[#"network"]&]],
-		PlotLabel->Style["Axon count\n",14],
+		PlotLabel->Style["Axon (edge) count over time\n",14],
 		Frame->True,FrameLabel->{Style["Time",14],Style["Edge count",14]},
 		Filling->Axis],
 	Background->White,FrameStyle->Transparent]
 
 
 (* ::Text:: *)
-(*Answer: Some edges were pruned in the first five steps. There were no further changes to the network's structure throughout the simulation run. We expected that new axons would be very unlikely to grow, and that existing weak edges would be pruned. This is consistent with the change in the number of edges of the network over time.*)
+(*Answer: The edge count dropped from 37 to 35 between step 1 and 5. There were no further changes throughout the simulation run. We expected that new axons would be unlikely to grow, and that existing weak edges would be pruned. This time series plot is consistent with that assessment.*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
+(*Network structure*)
+
+
+(* ::Text:: *)
+(*Question: How did the network structure change over time?*)
+
+
+(* ::Text:: *)
+(*At a glance:*)
+
+
+With[{
+	frames=Normal[Dataset[history][All,"network"]],
+	diffs=MapApply[{
+		"Edges pruned:"->If[{}==#,None,#]&@Complement[(*at t-1:*)#1,(*at t:*)#2],
+		"Edges sprouted:"->If[{}==#,None,#]&@Complement[(*at t:*)#2,(*at t-1:*)#1]}&,Partition[Map[Sort@*EdgeList,history[[All,"network"]]],2,1]]},
+	Manipulate[{
+		Labeled[frames[[t]],Text[Style["Network at t = "<>ToString[t],14]],Top],
+		If[t>1,Labeled[Dataset[Association[diffs[[t-1]]]],Text[Style["Changes since t-1:\n",14]],Top],Nothing]},
+		{t,1,50,1}]]
+
+
+(* ::Text:: *)
+(*First and last state network comparison:*)
+
+
+ClearAll[graphPlot]
+graphPlot=Rule[
+	Labeled[GraphPlot[#1,ImageSize->Small],Text[Style["Start",14]],Top],
+	Labeled[GraphPlot[#2,ImageSize->Small],Text[Style["End",14]],Top]]&@@history[[{1,-1},"network"]]
+
+
+(* ::Text:: *)
+(*Edge differences between the first and last graphs: *)
+
+
+Dataset[Association[{
+	"Edges pruned:"->If[{}==#,None,#]&@Complement[(*at t-1:*)#1,(*at t:*)#2],
+	"Edges sprouted:"->If[{}==#,None,#]&@Complement[(*at t:*)#2,(*at t-1:*)#1]}&@@
+		Map[EdgeList,history[[{1,-1},"network"]]]]]
+
+
+(* ::Text:: *)
+(*Answer: At step one, two edges are pruned, and one is sprouted. At step 4, one more edge is pruned. There are no further changes to the structure of the graph in this simulation. This is consistent with our expectation that the pruning and sprouting mechanisms are active and will fire if the starting graph configuration permits it. The first starting network differs from the final graph by only two edges.*)
+
+
+(* ::Subsection:: *)
 (*Weights*)
 
 
@@ -179,6 +229,7 @@ With[{frames=Map[
 (*First and last state weight comparison:*)
 
 
+ClearAll[weightsPlot]
 weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
 	ArrayPlot[#,ImageSize->Small,PlotLegends->Automatic]&,
 	history[[{1,-1},"weights"]]],
@@ -187,7 +238,7 @@ weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
 
 
 (* ::Text:: *)
-(*Answer:  We expected that weights should only change as a result of the pruning process. Visual inspection shows this appears to be the case. The weights only changed in the first five steps as a consequence of edge pruning. They are otherwise static throughout the simulation.*)
+(*Answer:  We expected that weights should only change as a result of the pruning and sprouting processes. Visual inspection shows this appears to be the case. The weights only changed in the first five steps. They are otherwise static throughout the simulation.*)
 
 
 (* ::Section:: *)
@@ -199,6 +250,7 @@ weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
 
 
 Export["activation.png", activationsPlot];
+Export["graph.png",Rasterize[graphPlot]];
 Export["raster.png", raster];
 Export["edge.png", edgePlot];
 Export["weights.png", weightsPlot];
@@ -219,8 +271,8 @@ ClearAll[c1, c2, c3, verificationPassed];
 finalActivation = Mean[Abs[Last[history]["activation"]]];
 c1 = finalActivation < 0.01;
 If[c1, 
-	Echo[N[finalActivation], "[PASS] Claim 1: Activations leaked to zero (Final): "],
-	Echo[N[finalActivation], "[FAIL] Claim 1: Activations did not leak (Final): "]
+	Echo[N[finalActivation], "[PASS] Claim 1: Activations leaked to zero (Final):"],
+	Echo[N[finalActivation], "[FAIL] Claim 1: Activations did not leak (Final):"]
 ];
 
 
@@ -232,8 +284,8 @@ initialMeanWeight = Mean[Abs[Flatten[Normal[brain["weights"]]]]];
 finalMeanWeight = Mean[Abs[Flatten[Normal[Last[history]["weights"]]]]];
 c2 = finalMeanWeight <= initialMeanWeight * 1.05;
 If[c2,
-	Echo[N[finalMeanWeight], "[PASS] Claim 2: Weights did not grow (" <> ToString[N[initialMeanWeight]] <> " -> ): "],
-	Echo[N[finalMeanWeight], "[FAIL] Claim 2: Weights grew significantly! Final: "]
+	Echo[N[finalMeanWeight], "[PASS] Claim 2: Weights did not grow (" <> ToString[N[initialMeanWeight]] <> " -> ):"],
+	Echo[N[finalMeanWeight], "[FAIL] Claim 2: Weights grew significantly! Final:"]
 ];
 
 
@@ -245,8 +297,8 @@ initialEdges = EdgeCount[brain["network"]];
 finalEdges = EdgeCount[Last[history]["network"]];
 c3 = finalEdges <= initialEdges;
 If[c3,
-	Echo[finalEdges, "[PASS] Claim 3: Topology did not grow (" <> ToString[initialEdges] <> " -> ): "],
-	Echo[finalEdges, "[FAIL] Claim 3: Topology grew! Sprouting found correlations. Final: "]
+	Echo[finalEdges, "[PASS] Claim 3: Topology did not grow (" <> ToString[initialEdges] <> " -> ):"],
+	Echo[finalEdges, "[FAIL] Claim 3: Topology grew! Sprouting found correlations. Final:"]
 ];
 
 
@@ -257,6 +309,6 @@ If[c3,
 verificationPassed = c1 && c2 && c3;
 
 If[verificationPassed,
-	Echo["Hypothesis Behavior CONFIRMED (Metabolic Decay).", "[CONCLUSION] "],
-	Echo["Hypothesis Falsified (System did not decay).", "[CONCLUSION] "]
+	Echo["Hypothesis Behavior CONFIRMED (Metabolic decay).", "[CONCLUSION]"],
+	Echo["Hypothesis Falsified (System did not decay).", "[CONCLUSION]"]
 ];

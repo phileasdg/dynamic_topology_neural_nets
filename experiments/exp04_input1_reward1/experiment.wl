@@ -56,7 +56,7 @@ SeedRandom[1234];
 
 
 ClearAll[brain];
-brain = InitializeBrain["InitialActivationFunction"->(RandomVariate[NormalDistribution[0,.25]]&)]
+brain = InitializeBrain[{20, 2}, "InitialActivationFunction"->(RandomVariate[NormalDistribution[0,.25]]&)]
 Echo[EdgeCount[brain["network"]], "Initial Edges:"];
 Echo[Mean[Abs[brain["activation"]]], "Initial Mean Activation:"];
 initialMeanWeight = Mean[Abs[Flatten[Normal[brain["weights"]]]]];

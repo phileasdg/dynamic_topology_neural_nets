@@ -12,7 +12,9 @@ This matrix describes the system's anticipated behavior under various environmen
 | **0 (Silence)** | **1 (High)** | **Runaway Hallucination**. Weights reinforcing internal loops grow toward saturation. Activations amplify. Edges sprout to support these self-generated echoes, crowding out others. |
 | **0 (Silence)** | **-1 (Punish)** | **Self-Destruction**. Weights in active loops are actively decreased. Activations leak. Residual structures are weakened and pruned. The brain silences itself. |
 | **0 (Silence)** | **Random** | **Delirium**. Activations amplify intermittently. Weights fluctuate on residual loops. Anatomy flickers as weak structures form and dissolve. |
-| **1 (Pattern)** | **0 (None)** | **Latent Learning**. Activations saturate to input pattern. Weights don't change. Edges sprout rapidly ($P > \tau$) but remain at pioneer strength ($\delta$). |
+| **1 (Constant)** | **0 (None)** | **Global Latent Learning**. Activations saturate globally. Weights don't change. Edges sprout uniformly across the network ($P > \tau$) resulting in a dense, interconnected mesh. |
+| **1 (Constant)** | **1 (High)** | **Global Saturation**. Activations lock at max. Weights grow rapidly everywhere. Network becomes a fully connected clique (if density permits). |
+| **1 (Pattern)** | **0 (None)** | **associative Latent Learning**. Activations saturate to input pattern. Weights don't change. Edges sprout rapidly ($P > \tau$) to connect co-active nodes, forming a clique *only* within the pattern. |
 | **1 (Pattern)** | **1 (High)** | **Hebbian Imprinting**. Activations saturate. Weights grow rapidly toward $\pm 1$. Structure locks the input pattern into physical memory. |
 | **1 (Pattern)** | **-1 (Punish)** | **Active Unlearning (Aversion)**. Activation saturates. Weights decreased. Edges connecting pattern are weakened and severed. |
 | **1 (Pattern)** | **Random** | **Robustness (Habit)**. Weights fluctuate but trend upward. Structure persists through reward droughts. |
