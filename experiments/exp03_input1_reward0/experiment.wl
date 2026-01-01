@@ -56,8 +56,9 @@ SeedRandom[1234];
 
 
 ClearAll[brain];
-brain = InitializeBrain[]
+brain = InitializeBrain["InitialActivationFunction"->(RandomVariate[NormalDistribution[0,.25]]&)]
 Echo[EdgeCount[brain["network"]], "Initial Edges:"];
+Echo[Mean[Abs[brain["activation"]]], "Initial Mean Activation:"];
 initialMeanWeight = Mean[Abs[Flatten[Normal[brain["weights"]]]]];
 
 (* Define a Pattern: First 5 neurons active *)
@@ -97,38 +98,92 @@ Last[history]
 (*1. Raster: Visualizing the imprinted pattern.*)
 
 
+(* ::Subsubsection::Closed:: *)
+(*Activations*)
+
+
+(* ::Text:: *)
+(*Question: In this scenario, how did the activations change over time? *)
+
+
+(* ::Text:: *)
+(*1. Raster: Visualizing the imprinted pattern.*)
+
+
 raster=Framed[ArrayPlot[history[[All,"activation"]],
 	PlotLabel->Style["Activation history (Latent)\n",14],
 	FrameLabel->{Style["Time",14],Style["Neuron index",14]},
 	ColorFunction->"ThermometerColors",FrameTicks->{True,False},
-	PlotLegends->Automatic],Background->White,FrameStyle->Transparent]
+	ImageSize->Medium,PlotLegends->Automatic],Background->White,FrameStyle->Transparent]
+
+
+(* ::Text:: *)
+(*We can also visualise this as a time series:*)
+
+
+activationsPlot=Framed[ListPlot[
+	Transpose[history[[All,"activation"]]],
+	Joined->True,PlotLegends->Range[VertexCount[brain["network"]]],
+	PlotLabel->Style["Neural activation\n",14],
+	Frame->True,
+	FrameLabel->{Style["Time",14],Style["Activation",14]},
+	PlotRange->All,ImageSize->Medium],
+	Background->White,FrameStyle->Transparent]
+
+
+(* ::Text:: *)
+(*Answer: We expect activations to saturate to the input pattern.*)
+
+
+(* ::Subsubsection::Closed:: *)
+(*Edges*)
+
+
+(* ::Text:: *)
+(*Question: How did the number of edges change over time?*)
 
 
 (* ::Text:: *)
 (*2. Edges: Did we grow new connections?*)
 
 
-edges=Framed[
+edgePlot=Framed[
 	ListPlot[
 		Normal[Dataset[history][All,EdgeCount[#"network"]&]],
 		PlotLabel->Style["Axon count (Sprouting)\n",14],
 		Frame->True,FrameLabel->{Style["Time",14],Style["Edge count",14]},
-		Filling->Axis],
+		Filling->Axis,ImageSize->300],
 	Background->White,FrameStyle->Transparent]
+
+
+(* ::Text:: *)
+(*Answer: We expect edges to sprout rapidly ($P > \tau$) but remain at pioneer strength ($\delta$).*)
+
+
+(* ::Subsubsection::Closed:: *)
+(*Weights*)
+
+
+(* ::Text:: *)
+(*Question: How did the weights evolve throughout the simulation?*)
 
 
 (* ::Text:: *)
 (*3. Weights: Did they remain light (latent)?*)
 
 
-weights=Framed[
+weightsPlot=Framed[
 	ListPlot[
 		Normal[Dataset[history][All, Total[Flatten[Abs[#"weights"]]]&]],
 		PlotLabel->Style["Total Synaptic Weight (Latent)\n",14],
 		Frame->True,FrameLabel->{Style["Time",14],Style["Total Weight",14]},
 		PlotStyle->Orange,
-		Filling->Axis],
+		Filling->Axis,ImageSize->300],
 	Background->White,FrameStyle->Transparent]
+
+
+(* ::Text:: *)
+(*Answer: We expect weights not to change significantly (Hebbian learning inactive).*)
 
 
 (* ::Section:: *)
@@ -177,9 +232,10 @@ If[c3,
 (*Export plots:*)
 
 
+Export["activation.png", activationsPlot];
 Export["raster.png", raster];
-Export["edges.png", edges];
-Export["weights.png", weights];
+Export["edge.png", edgePlot];
+Export["weights.png", weightsPlot];
 Echo["Plots saved."];
 
 

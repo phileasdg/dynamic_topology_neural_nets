@@ -41,7 +41,7 @@
 
 
 (* ::Text:: *)
-(*If I feed the brain no sensory input and no reward, the existing weights do not undergo Hebbian learning, but the metabolism continues to run, so neuron activations leak at the specified LeakRate; meanwhile, edges under the SurvivalThreshold are pruned, and vertices whose residual activations correlate will sprout new connections with tiny pioneer weights at the specified SproutingRate within the MaxDensity capacity."*)
+(*If I feed the brain no sensory input and no reward, the existing weights do not undergo Hebbian learning, but the metabolism continues to run, so neuron activations leak at the specified LeakRate; meanwhile, edges under the SurvivalThreshold are pruned, and vertices whose residual activations correlate will sprout new connections with tiny pioneer weights at the specified SproutingRate within the MaxDensity capacity.*)
 
 
 (* ::Section:: *)
@@ -68,7 +68,7 @@ Get["../analysis_tools.wl"];
 
 SeedRandom[1234];
 ClearAll[brain];
-brain = InitializeBrain[]
+brain = InitializeBrain["InitialActivationFunction"->(RandomVariate[NormalDistribution[0,.25]]&)]
 Echo[EdgeCount[brain["network"]], "Initial Edges:"];
 Echo[Mean[Abs[brain["activation"]]], "Initial Mean Activation:"];
 
@@ -102,49 +102,45 @@ Last[history]
 (*Analysis*)
 
 
-(* ::Text:: *)
-(*We expect that weights should only change as a result of the pruning process. We can inspect this visually and find that this appears to be the case:*)
-
-
-With[{frames=Map[
-	ArrayPlot[#,ImageSize->Medium,PlotLegends->Automatic,PlotLabel->Style["Neural network weights\n",14]]&,
-	Normal[Dataset[history][All,"weights"]]]},
-	Manipulate[frames[[t]],{t,1,50,1}]]
-
-
-weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
-	ArrayPlot[#,ImageSize->Small,PlotLegends->Automatic]&,
-	history[[{1,-1},"weights"]]],
-	Text[Style["Neural network weights at simulation start and end (50 step simulation)\n",14]],Top],
-	Background->White,FrameStyle->Transparent]
+(* ::Subsection:: *)
+(*Activations*)
 
 
 (* ::Text:: *)
-(*We expect that activations should leak to zero, and they do:*)
+(*Question: In this scenario, how did the activations change over time? *)
 
 
-decayPlot=Framed[ListPlot[
+activationsPlot=Framed[ListPlot[
 	Transpose[history[[All,"activation"]]],
 	Joined->True,PlotLegends->Range[VertexCount[brain["network"]]],
 	PlotLabel->Style["Neural activation decay\n",14],
 	Frame->True,
-	FrameLabel->{Style["Time",14],Style["Activation",14]}],
+	FrameLabel->{Style["Time",14],Style["Activation",14]},
+	PlotRange->All],
 	Background->White,FrameStyle->Transparent]
 
 
 (* ::Text:: *)
-(*We can also visualise the evolution of neural activations as a spacetime plot like this:*)
+(*We can also visualise the evolution of neural activations as a spacetime plot:*)
 
 
 raster=Framed[ArrayPlot[history[[All,"activation"]],
-	PlotLabel->Style["Activation history:\n",14],
+	PlotLabel->Style["Activation history\n",14],
 	FrameLabel->{Style["Time",14],Style["Neuron index",14]},
 	ColorFunction->"ThermometerColors",FrameTicks->{True,False},
 	PlotLegends->Automatic],Background->White,FrameStyle->Transparent]
 
 
 (* ::Text:: *)
-(*We expect that new axons are very unlikely to grow, and that existing weak edges will be pruned, which we can confirm:*)
+(*Answer: We expected that activations would leak to zero, and they did.*)
+
+
+(* ::Subsection::Closed:: *)
+(*Edges*)
+
+
+(* ::Text:: *)
+(*Question: How did the number of edges change over time?*)
 
 
 edgePlot=Framed[
@@ -156,18 +152,56 @@ edgePlot=Framed[
 	Background->White,FrameStyle->Transparent]
 
 
+(* ::Text:: *)
+(*Answer: Some edges were pruned in the first five steps. There were no further changes to the network's structure throughout the simulation run. We expected that new axons would be very unlikely to grow, and that existing weak edges would be pruned. This is consistent with the change in the number of edges of the network over time.*)
+
+
+(* ::Subsection::Closed:: *)
+(*Weights*)
+
+
+(* ::Text:: *)
+(*Question: How did the weights evolve throughout the simulation?*)
+
+
+(* ::Text:: *)
+(*At a glance: *)
+
+
+With[{frames=Map[
+	ArrayPlot[#,ImageSize->Small,PlotLegends->Automatic,
+		PlotLabel->Style["Neural network weights\n",14]]&,
+	Normal[Dataset[history][All,"weights"]]]},
+	Manipulate[frames[[t]],{t,1,50,1}]]
+
+
+(* ::Text:: *)
+(*First and last state weight comparison:*)
+
+
+weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
+	ArrayPlot[#,ImageSize->Small,PlotLegends->Automatic]&,
+	history[[{1,-1},"weights"]]],
+	Text[Style["Neural network weights at simulation start and end (50 step simulation)\n",14]],Top],
+	Background->White,FrameStyle->Transparent]
+
+
+(* ::Text:: *)
+(*Answer:  We expected that weights should only change as a result of the pruning process. Visual inspection shows this appears to be the case. The weights only changed in the first five steps as a consequence of edge pruning. They are otherwise static throughout the simulation.*)
+
+
 (* ::Section:: *)
 (*Conclusion*)
 
 
 (* ::Subsection:: *)
-(*Export plots:*)
+(*Export plots*)
 
 
-Export["weights.png", weightsPlot];
-Export["decay.png", decayPlot];
-Export["edge.png", edgePlot];
+Export["activation.png", activationsPlot];
 Export["raster.png", raster];
+Export["edge.png", edgePlot];
+Export["weights.png", weightsPlot];
 Echo["Plots saved to experiment folder."];
 
 

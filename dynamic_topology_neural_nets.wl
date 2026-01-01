@@ -31,7 +31,7 @@ FanInNormalize[vertexDegrees_List,weights_?ArrayQ,scalingFunction_:(*Xavier/He i
 ClearAll[NeuralNet]
 NeuralNet::usage = "NeuralNet[graph, opts] initializes a new neural network state association from a graph topology.";
 
-Options[NeuralNet]={"Biases"->0,"SensorySensitivity"->1,"SensoryInput"->0,"MaxDensity"->.5};
+Options[NeuralNet]={"Biases"->0,"InitialActivationFunction"->(0&),"SensorySensitivity"->1,"SensoryInput"->0,"MaxDensity"->.5};
 
 NeuralNet[network_Graph/;VertexList[network]===Range[VertexCount[network]],OptionsPattern[]]:=AssociationThread[
 	{"network","weights","biases","activation",(*"networkSkeleton",*)"sensorySensitivity","sensoryInput","maxDensity"},
@@ -39,14 +39,13 @@ NeuralNet[network_Graph/;VertexList[network]===Range[VertexCount[network]],Optio
 	(*Initial weights are random gaussian variables around zero:*)
 	FanInNormalize[VertexDegree[network],InitializeEdgeWeights[network]],
 	(*Initial bias is 0:*)OptionValue["Biases"],
-	(*Initial activations are either zero or noise:*)(*Table[0,VertexCount[network]]*)RandomVariate[NormalDistribution[0,.25],VertexCount[network]],
+	(*Initial activations are zero or specified by the InitialActivationFunction option:*)
+	Table[OptionValue["InitialActivationFunction"][],VertexCount[network]],
 	(*(*The network skeleton is the the adjacency matrix of the network:*)AdjacencyMatrix[network],*)
 	(*Default sensory sensitivity is 1/1 signal received to signal perceived for all neurons:*)OptionValue["SensorySensitivity"],
 	(*Default sensory input is 0:*)0,
 	(*Default density is .5:*)OptionValue["MaxDensity"]
 	}]
-	
-
 
 
 (* ::Subsection:: *)
