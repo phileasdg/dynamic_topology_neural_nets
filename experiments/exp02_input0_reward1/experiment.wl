@@ -8,8 +8,37 @@
 (*Experimental parameters*)
 
 
+(* ::Subsection:: *)
+(*Brain:*)
+
+
 (* ::Text:: *)
-(*System Dynamics Matrix: Input=0, Reward=1*)
+(*Network : 20 Neurons, Barabasi-Albert Scale-Free Graph (k = 2)*)
+(*InitialActivationFunction: (RandomVariate[NormalDistribution[0, 0.5]] &)*)
+
+
+(* ::Subsection:: *)
+(*Scenario A (Stability) :*)
+
+
+(* ::Text:: *)
+(*Input : 0*)
+(*Reward : 1*)
+(*Steps : 50*)
+(*LeakRate : 0.15*)
+(*LearningRate : 0.01*)
+
+
+(* ::Subsection:: *)
+(*Scenario B (Runaway Reinforcement) :*)
+
+
+(* ::Text:: *)
+(*Input : 0*)
+(*Reward : 1*)
+(*Steps : 50*)
+(*LeakRate : 0.05*)
+(*LearningRate : 0.2*)
 
 
 (* ::Section:: *)
@@ -475,24 +504,24 @@ compWeights = Framed[
 
 
 (*Export scenario a plots:*)
-Export["activationA.png", activationsPlotA];
-Export["graphA.png",Rasterize[graphPlotA]];
-Export["rasterA.png", rasterA];
-Export["edgeA.png", edgePlotA];
-Export["weightsA.png", weightsPlotA];
+Export["img/activationA.png", activationsPlotA];
+Export["img/graphA.png",Rasterize[graphPlotA]];
+Export["img/rasterA.png", rasterA];
+Export["img/edgeA.png", edgePlotA];
+Export["img/weightsA.png", weightsPlotA];
 
 (*Export scenario b plots:*)
-Export["activationB.png", activationsPlotB];
-Export["graphB.png",Rasterize[graphPlotB]];
-Export["rasterB.png", rasterB];
-Export["edgeB.png", edgePlotB];
-Export["weightsB.png", weightsPlotB];
+Export["img/activationB.png", activationsPlotB];
+Export["img/graphB.png",Rasterize[graphPlotB]];
+Export["img/rasterB.png", rasterB];
+Export["img/edgeB.png", edgePlotB];
+Export["img/weightsB.png", weightsPlotB];
 
 (*Export comparisons*)
-Export["comparison_activations.png", compActivations];
-Export["comparison_rasters.png", compRasters];
-Export["comparison_edges.png", compEdges];
-Export["comparison_weights.png", compWeights];
+Export["img/comparison_activations.png", compActivations];
+Export["img/comparison_rasters.png", compRasters];
+Export["img/comparison_edges.png", compEdges];
+Export["img/comparison_weights.png", compWeights];
 
 Echo["Plots saved to experiment folder."];
 

@@ -9,7 +9,12 @@
 
 
 (* ::Text:: *)
-(*System Dynamics Matrix: Input=0, Reward=0*)
+(*Input : 0 (Silence)*)
+(*Reward : 0*)
+(*LeakRate : 0.1*)
+(*SurvivalThreshold : 0.005*)
+(*Steps : 50*)
+(*InitialActivationFunction: (RandomVariate[NormalDistribution[0, 0.25]] &)*)
 
 
 (* ::Section:: *)
@@ -249,11 +254,11 @@ weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
 (*Export plots*)
 
 
-Export["activation.png", activationsPlot];
-Export["graph.png",Rasterize[graphPlot]];
-Export["raster.png", raster];
-Export["edge.png", edgePlot];
-Export["weights.png", weightsPlot];
+Export["img/activation.png", activationsPlot];
+Export["img/graph.png",Rasterize[graphPlot]];
+Export["img/raster.png", raster];
+Export["img/edge.png", edgePlot];
+Export["img/weights.png", weightsPlot];
 Echo["Plots saved to experiment folder."];
 
 

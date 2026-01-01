@@ -2,6 +2,23 @@
 
 **System Dynamics Matrix**: Input=0, Reward=1
 
+## Experimental Parameters
+
+**Scenario A (Stability)**
+*   **Input**: 0
+*   **Reward**: 1
+*   **LeakRate**: 0.15
+*   **LearningRate**: 0.01
+*   **Steps**: 50
+
+**Scenario B (Runaway Reinforcement)**
+*   **Input**: 0
+*   **Reward**: 1
+*   **LeakRate**: 0.05
+*   **LearningRate**: 0.2
+*   **Steps**: 50
+
+
 ## Hypotheses
 ### Testable bullets
 *   Weights will reinforce along internal loops, tending towards saturation.
@@ -26,39 +43,49 @@ Run for 50 steps with LeakRate = 0.15 and LearningRate = 0.01.
 ### Activations
 **Question**: In this scenario, how did the activations change over time?
 
-![Activations Plot A](activationA.png)
+**Scenario A (Stability):**
+![Activations Plot A](img/activationA.png)
+![Raster Plot A](img/rasterA.png)
 
-We can also visualise the evolution of neural activations as a spacetime plot:
+**Scenario B (Runaway Reinforcement):**
+![Activations Plot B](img/activationB.png)
+![Raster Plot B](img/rasterB.png)
 
-![Raster Plot A](rasterA.png)
-
-**Answer**: The activations all decayed towards zero.
+**Answer**:
+*   **Scenario A**: Activations decayed as expected, similar to the Silence experiment.
+*   **Scenario B**: Activations exploded and locked into a high state, confirming "Runaway Reinforcement" where noise is amplified by the loop.
 
 ### Network structure
 **Question**: How did the network structure change over time?
 
-**First and last state network comparison:**
-![Graph Plot A](graphA.png)
+**Scenario A (Stability):**
+![Graph Plot A](img/graphA.png)
 
-**Answer**: At step 1, one edge is pruned, and one sprouted. At step 2, one more is sprouted, and at step 7, one more is pruned. Overall, it takes pruning one edge and sprouting another to go from the starting network to the final network.
+**Scenario B (Runaway Reinforcement):**
+![Graph Plot B](img/graphB.png)
+
+**Answer**:
+*   **Scenario A**: The network remained stable, with minimal changes (pruning of weak edges).
+*   **Scenario B**: The network rewired significantly. The graph shows a dense cluster of strong connections forming a loop, supporting the high activation state.
 
 ### Edges
 **Question**: How did the number of edges change over time?
 
-![Edge Plot A](edgeA.png)
+![Edge Plot](img/edge.png)
 
-**Answer**: The edge count grew by one at step 3 and dropped by one at step 8. There were no further changes to the network's structure throughout the simulation run. The edge count is overall very stable throughout the simulation.
+**Answer**:
+*   **Scenario A (Blue)**: Edge count dropped slightly due to pruning.
+*   **Scenario B (Orange)**: Edge count increased significantly. The runaway activation triggered sprouting events ($P > \tau$), adding new connections to support the growing signal.
 
 ### Weights
 **Question**: How did the weights evolve throughout the simulation?
 
-![Weights Plot A](weightsA.png)
+![Weights Plot](img/weights.png)
 
 **Answer**: The weights only changed in the first step as a consequence of edge pruning. They are static throughout the simulation.
 
 ---
 
-## Scenario B: Runaway Reinforcement (Low Leak, High Learning)
 Run for 50 steps with LeakRate = 0.05 and LearningRate = 0.2.
 
 ### Activations

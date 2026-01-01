@@ -5,16 +5,24 @@
 
 
 (* ::Section:: *)
+(*Experimental parameters*)
+
+
+(* ::Text:: *)
+(*Input : 1 (Constant Global)*)
+(*Reward : 0*)
+(*LeakRate : 0.1*)
+(*SproutingThreshold : 0.01*)
+(*WeightAssignmentFunction : 0.01 (Pioneers)*)
+(*Steps : 50*)
+
+
+(* ::Section:: *)
 (*Hypotheses*)
 
 
 (* ::Subsection:: *)
 (*Testable bullets*)
-
-
-(* ::Text:: *)
-(*Hypothesis: Latent Learning*)
-(*System Dynamics Matrix: Input=1 (Pattern), Reward=0*)
 
 
 (* ::Item:: *)
@@ -34,7 +42,7 @@
 
 
 (* ::Text:: *)
-(*"If I feed a pattern but no reward, Hebbian learning is inactive, so weights don't change; however, the Potentiality Matrix will reflect the correlations of the driven activations; if these exceed the threshold, edges will sprout to connect the pattern, but they will remain weak pioneer connections."*)
+(*If I feed a strong constant signal but no reward, Hebbian learning is inactive, so weights don't change; however, the Potentiality Matrix will reflect the correlations of the driven activations; if these exceed the threshold, edges will sprout to connect the pattern, but they will remain weak pioneer connections."*)
 
 
 (* ::Section:: *)
@@ -83,6 +91,8 @@ history = NestList[
 	brain, 
 	nSteps
 ];
+
+
 
 (* ::Text:: *)
 (*Preview the last brain state of the simulation:*)
@@ -215,10 +225,36 @@ edgePlot=Framed[
 (*3. Weights: Did they remain light (latent)?*)
 
 
-weightsPlot=Framed[
+(* ::Text:: *)
+(*At a glance:*)
+
+
+With[{frames=Map[
+	ArrayPlot[#,ImageSize->Small,PlotLegends->Automatic,
+		PlotLabel->Style["Neural network weights\n",14]]&,
+	Normal[Dataset[history][All,"weights"]]]},
+	Manipulate[frames[[t]],{t,1,50,1}]]
+
+
+(* ::Text:: *)
+(*First and last state weight comparison:*)
+
+
+weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
+	ArrayPlot[#,ImageSize->Small,PlotLegends->Automatic]&,
+	history[[{1,-1},"weights"]]],
+	Text[Style["Neural network weights at simulation start and end\n",14]],Top],
+	Background->White,FrameStyle->Transparent]
+
+
+(* ::Text:: *)
+(*We can also track the Total Synaptic Weight to see if the brain is gaining "mass":*)
+
+
+totalWeightPlot=Framed[
 	ListPlot[
 		Normal[Dataset[history][All, Total[Flatten[Abs[#"weights"]]]&]],
-		PlotLabel->Style["Total Synaptic Weight (Latent)\n",14],
+		PlotLabel->Style["Total Synaptic Weight\n",14],
 		Frame->True,FrameLabel->{Style["Time",14],Style["Total Weight",14]},
 		PlotStyle->Orange,
 		Filling->Axis,ImageSize->300],
@@ -233,11 +269,12 @@ weightsPlot=Framed[
 (*Export plots:*)
 
 
-Export["activation.png", activationsPlot];
-Export["raster.png", raster];
-Export["edge.png", edgePlot];
-Export["weights.png", weightsPlot];
-Export["graph.png", Rasterize[graphPlot]];
+Export["img/activation.png", activationsPlot];
+Export["img/raster.png", raster];
+Export["img/edge.png", edgePlot];
+Export["img/weights.png", weightsPlot];
+Export["img/total_weight.png", totalWeightPlot];
+Export["img/graph.png", Rasterize[graphPlot]];
 Echo["Plots saved."];
 
 
@@ -305,6 +342,7 @@ verificationPassed = c1 && c2 && c3;
 
 (* ::Subsection:: *)
 (*Conclusion*)
+
 
 If[verificationPassed, 
 	Echo["[CONCLUSION] Hypothesis CONFIRMED: Global Latent Learning observed."], 
