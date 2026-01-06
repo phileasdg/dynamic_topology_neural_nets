@@ -45,14 +45,14 @@ The raster plot clearly shows the three phases of the experiment:
 ### Edges
 **Question**: How did the connectivity change?
 
-The edge count dropped initially (pruning weak connections during baseline) but stabilized or grew slightly during conditioning as the Hebbian association formed.
+For the first 20 ticks (baseline), the number of edges grows without a discernible pattern. During conditioning (21-40), growth slows as pruning increases, but new edges form more orderly. In the testing phase (41-100), the network enters a limit cycle: pruning one edge to make another, then reversing, oscillating until the end.
 
 ![Edge Plot](img/edge.png)
 
 ### Weights
 **Question**: How did the synaptic weights evolve?
 
-Most weights remained stable, but a specific subset (the red line in the learning curve below) grew significantly to encode the new memory.
+Even some of the weights that were initially the strongest weaken and fade throughout the simulation. On the other hand, the matrix becomes more symmetrical. During the conditioning phase, the edges appear, but the CS and US weights really pick up after the end of the conditioning phase.
 
 ![Weights Plot](img/weights.png)
 

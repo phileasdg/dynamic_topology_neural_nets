@@ -1,0 +1,15 @@
+>> Current Directory:  /Users/phileasdazeleygaist/Desktop/Dynamic topology neural nets/guides/xor
+>> Starting Protocol A: The Teacher (Phased)...
+>> HistoryA Length:  101
+>> Head of Last HistoryA:  Association
+>> Keys:  {network, weights, biases, activation, sensorySensitivity, sensoryInput, maxDensity}
+>> Starting Protocol B: The Explorer (Noise/RL)...
+>> ---------------------------------------------------
+>> RESULTS (Teacher vs Explorer)
+>> ---------------------------------------------------
+>> {Metric, Teacher (A), Explorer (B)}
+>> {Response A, respA_A, respB_A}
+>> {Response B, respA_B, respB_B}
+>> {Response AB, respA_AB, respB_AB}
+>> ---------------------------------------------------
+>> Plots saved.

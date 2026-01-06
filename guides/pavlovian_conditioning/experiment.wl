@@ -52,7 +52,7 @@ k = 3;
 
 (* InitializeBrain automatically removes 1->N and N->1 edges *)
 brain = InitializeBrain[{n, k}, 
-	"InitialActivationFunction" -> (RandomVariate[NormalDistribution[0, 0.5]] &)];
+	"InitialActivationFunction" -> (RandomVariate[NormalDistribution[0, 0.5]] &)]
 
 Echo[EdgeCount[brain["network"]], "Initial Edges:"];
 
@@ -143,7 +143,7 @@ raster=Framed[ArrayPlot[history[[All,"activation"]],
 
 
 (* ::Subsubsection:: *)
-(*Network structure TODO*)
+(*Network structure*)
 
 
 (* ::Text:: *)
@@ -186,11 +186,11 @@ Dataset[Association[{
 
 
 (* ::Text:: *)
-(*Answer: The network rewires during the active conditioning phase. The dense co-activation of Node 1 and Node 10 creates a strong potential for new edges to form (Sprouting), while weak, unused edges from the random initialization are pruned away.*)
+(*Answer: For the first 20 ticks (baseline), the number of edges grows, but without a clearly discernible pattern. For the next 20 ticks (conditioning), The overall edge growth rate seems to slow a little, as more edges are pruned than during the previous phase. On the other hand, new edges now seem to be forming in a more orderly way. Finally, in the testing phase, the network enters a limit cycle, pruning one edge to make the other, then pruning the new edge to restore the old one, until the end of the simulation.*)
 
 
 (* ::Subsubsection:: *)
-(*Edges TODO*)
+(*Edges*)
 
 
 (* ::Text:: *)
@@ -208,7 +208,7 @@ edgePlot=Framed[
 
 
 (* ::Text:: *)
-(*Answer: We usually see an initial dip as the 'lobotomized' random brain prunes inefficient edges, followed by stabilization or growth during the high-energy Conditioning phase where Hebbian correlations ($P_{ij} > \tau$) are plentiful.*)
+(*Answer: During the baseline phase, from step 2 to 20, edges sprout at a rate of 1 edge per second, from 24 to 41 edges. In the conditioning phase, from step 21 to 40, edges continue to sprout, but edges are pruned more frequently, leading to slower edge count growth. By the end of the conditioning phase, the number of edges has reached a fixed point of 50.*)
 
 
 (* ::Subsubsection:: *)
@@ -243,7 +243,7 @@ weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
 
 
 (* ::Text:: *)
-(*Answer: Most of the weights remain static (the blue/white background), but specific connections relevant to the CS->US path should heat up (turn red/orange) during the Conditioning phase. This represents the physical formation of the memory.*)
+(*Answer: Even some of the weights that were initially the strongest weaken and fade throughout the simulation. On the other hand, the matrix becomes more symmetrical. During the conditioning phase, the edges appear, but the CS and US weights really pick up after the end of the conditioning phase.*)
 
 
 (* ::Subsection:: *)
@@ -258,42 +258,24 @@ weightsPlot=Framed[Labeled[(#1->#2)&@@Map[
 (*Question: Did the brain learn the specific connection 1 -> N?*)
 
 
-(* Track the weight of the specific edge 1 -> N over time *)
-(* Note: If the edge doesn't exist, we treat weight as 0 *)
-weightPath = Map[
-	Function[b, 
-		With[{edges = EdgeList[b["network"]], weights = Normal[b["weights"]]},
-			If[MemberQ[edges, 1 \[DirectedEdge] n],
-				(* Find index of edge *)
-				(* Extract returns {value}, so we take First *)
-				First[Extract[weights, Position[edges, 1 \[DirectedEdge] n][[1]]]],
-				0.0
-			]
-		]
-	], 
-	history
-];
+(* Track the weight of the specific edge 1 -> N and N -> 1 over time *)
+weightPath = {Map[#["weights"][[1, n]] &, history],Map[#["weights"][[n, 1]] &, history]};
 
 weightPlot = Framed[
 	ListLinePlot[weightPath, 
-		PlotLabel -> Style["Associative Strength (1 -> " <> ToString[n] <> ")\n", 14], 
+		PlotLabel -> Style["Neural associative strength\n", 14], 
 		Frame -> True, 
 		FrameLabel -> {Style["Time", 14], Style["Weight", 14]},
-		GridLines -> {{20, 40}, Automatic}, 
-		PlotStyle -> {Thick, Red}, 
+		GridLines -> {{20, 40}, Automatic},  
 		ImageSize -> Medium,PlotRange->Full,
-		Epilog -> {
-			Text[Style["Baseline", 10], {10, 0.8}],
-			Text[Style["Conditioning", 10], {30, 0.8}],
-			Text[Style["Testing", 10], {70, 0.8}]
-		}
+		PlotLegends->{"1\[Rule]n","n\[Rule]1"}
 	],
 	Background -> White, FrameStyle -> Transparent
-];
+]
 
 
 (* ::Text:: *)
-(*Answer: The plot tracks the weight of the direct edge from CS (1) to US (10). It should be zero during baseline (since we lobotomized it), rise significantly during Conditioning (Hebbian learning), and hold steady during Testing (memory retention).*)
+(*Answer: The plot tracks the weights of the direct edges between CS (1) an US (10). It is zero during baseline (since the edges don't exist at this point), rises significantly during the conditioning phase (Hebbian learning), and holds steady during Testing (memory retention).*)
 
 
 (* ::Subsubsection:: *)
@@ -304,22 +286,17 @@ weightPlot = Framed[
 (*Question: Does the final physical structure reflect the learned association?*)
 
 
-(* Visualize the final graph, highlighting the learned connection *)
-finalGraph = Last[history]["network"];
-anatomyPlot = HighlightGraph[finalGraph, {1, n}, 
-	VertexLabels -> "Name", 
-	EdgeStyle -> {(1 \[DirectedEdge] n) -> {Red, Thickness[0.02]}}, 
-	PlotLabel -> Style["Anatomy After Conditioning\n", 14], 
-	ImageSize -> Medium
-];
+anatomyPlot=Framed[HighlightGraph[history[[-1,"network"]],{1,n,1\[DirectedEdge]n,n\[DirectedEdge]1},
+	PlotLabel -> Style["Anatomy after conditioning\n", 14],
+	VertexLabels->"Name"],Background->White,FrameStyle->Transparent]
 
 
 (* ::Text:: *)
-(*Answer: We should see a red edge connecting Node 1 to Node 10, indicating that the brain physically grew a connection to link the cause (Bell) to the effect (Food).*)
+(*Answer: Yes, as the network did succeed at creating connections between the CS and US neurons, which where initially completely disconnected.*)
 
 
 (* ::Subsubsection:: *)
-(*Activation response (test phase)*)
+(*Activation response (test phase) TODO*)
 
 
 (* ::Text:: *)
@@ -333,18 +310,18 @@ actN = history[[All, "activation", n]];
 
 responsePlot = Framed[
 	ListLinePlot[{act1, actN}, 
-		PlotLegends -> {"CS (Node 1)", "US (Node " <> ToString[n] <> ")"},
-		PlotLabel -> Style["Neural Response\n", 14],
+		PlotLegends -> {"CS (node 1)", "US (node " <> ToString[n] <> ")"},
+		PlotLabel -> Style["Neural response\n", 14],
 		Frame -> True,
 		GridLines -> {{20, 40}, Automatic},
 		ImageSize -> Medium
 	], 
 	Background -> White, FrameStyle -> Transparent
-];
+]
 
 
 (* ::Text:: *)
-(*Answer: Look at the Testing phase (Steps 41-100). The Blue line (CS) pulses. If the Orange line (US) also spikes in response, the conditioning was successful. The brain 'hallucinates' the US because the CS told it to.*)
+(*Answer: Yes. In the testing phase, the CS node is pulsed, but the US node is not, and no reward is provided to the network, yet the US node fires at a consistent, sustained rate. The network "hallucinates" US because it was conditioned to associate it with CS. *)
 
 
 (* ::Subsection:: *)
@@ -367,10 +344,11 @@ Echo["Plots saved."];
 
 
 (* 1. Connection Formed: Edge 1->N exists at end *)
+finalGraph = history[[-1, "network"]];
 hasEdge = MemberQ[EdgeList[finalGraph], 1 \[DirectedEdge] n];
 
 (* 2. Connection Learned: Weight 1->N > 0.15 *)
-finalWeight = Last[weightPath];
+finalWeight = Last[weightPath[[1]]];
 isStrong = finalWeight > 0.15;
 
 (* 3. Response: US (Node N) fires in Phase C (Steps 41-100) when CS is presented *)
@@ -387,7 +365,6 @@ If[hasEdge && isStrong && responds,
 	Echo["[CONCLUSION] Pavlovian Conditioning SUCCESSFUL."],
 	Echo["[CONCLUSION] Pavlovian Conditioning FAILED."]
 ];
-
 
 
 

@@ -39,7 +39,7 @@ This document provides a deep dive into every core function in the codebase. For
 - **Mechanism**: Applies a **Leaky Integrate-and-Fire** dynamic:
   $$A_{new} = (1 - \lambda)A_{old} + \lambda \cdot \text{Tanh}(z)$$
 - **Intuition**: **Temporal Continuity**. Real neurons don't switch states instantly. They have capacitance. The `leakRate` ($\lambda$) determines the time constant of the system.
-    - Low $\lambda$: The neuron is "memorious" and slow to change (long-term integration).
+    - Low $\lambda$: The neuron is "memorious" and slow to change (long-term integration). (See `parameters_reference.md` for `LeakRate` ranges)
     - High $\lambda$: The neuron is "reactive" and follows the input closely.
     - **Why Tanh?**: Only Tanh (or similar sigmoids) squashes the output between -1 and 1. Without this non-linearity, a deep neural network is mathematically equivalent to a single linear layer (useless). Tanh is centered at 0, which helps with keeping weights centered during learning.
 
