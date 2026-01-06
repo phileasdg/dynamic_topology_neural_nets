@@ -340,6 +340,101 @@ history = FoldList[
 	{{phase3ten,1, "Target output"},-1,1}]
 
 
+(* ::Section:: *)
+(*Testing*)
+
+
+(* ::Subsection:: *)
+(*Phase 1*)
+
+
+(* ::Subsubsection:: *)
+(*Input A*)
+
+
+Manipulate[
+	Module[{network=Last[historyA1],inputs,rewards,history},
+		inputs = (*Signal to A:*)Table[ReplacePart[ConstantArray[0., n], {1 -> 1.0}], {20}];
+		rewards = ConstantArray[0., 20];
+		history = FoldList[
+			Step[#1, #2[[1]], #2[[2]], 
+				"LeakRate" -> leakRate, 
+				"LearningRate" -> learningRate
+			]&, 
+			network,
+			Transpose[{inputs, rewards}]
+		]]//Framed[ListPlot[
+		Transpose[#[[All,"activation"]]],
+		Joined->True,PlotLegends->Range[VertexCount[brain["network"]]],
+		PlotLabel->Style["Neural activations over time (protocol A)\n",14],
+		Frame->True,
+		FrameLabel->{Style["Time",14],Style["Activation",14]},
+		PlotRange->All,ImageSize->Medium,GridLines->{{20,40,60,80,100},None}],
+		Background->White,FrameStyle->Transparent]&,
+		Style["Simulation parameters", {Bold,12}],
+	{{leakRate,0.01},0,1},
+	{{learningRate,0.1},0,1}]
+
+
+Manipulate[
+	Module[{inputs,rewards,history},(* Define Phases *)
+		inputs = (*Signal to A:*)Table[ReplacePart[ConstantArray[0., n], {1 -> 1.0}], {20}];
+		rewards = ConstantArray[0., 20];
+		
+		(* Run Simulation A *)
+		history = FoldList[
+			Step[#1, #2[[1]], #2[[2]], 
+				"LeakRate" -> leakRate, 
+				"LearningRate" -> learningRate
+			]&, 
+			<|#,"activation"->0*#activation|>&@Last[historyA1], 
+			Transpose[{inputs, rewards}]
+		]]//Framed[ListPlot[
+		Transpose[#[[All,"activation"]]],
+		Joined->True,PlotLegends->Range[VertexCount[brain["network"]]],
+		PlotLabel->Style["Neural activations over time (protocol A)\n",14],
+		Frame->True,
+		FrameLabel->{Style["Time",14],Style["Activation",14]},
+		PlotRange->All,ImageSize->Medium,GridLines->{{20,40,60,80,100},None}],
+		Background->White,FrameStyle->Transparent]&,
+		Style["Simulation parameters", {Bold,12}],
+	{{leakRate,0.01},0,1},
+	{{learningRate,0.1},0,1}]
+
+
+<|#,"activation"->0*#activation|>&@Last[historyA1]
+
+
+Manipulate[
+	Module[{inputs,rewards,history},(* Define Phases *)
+		inputs = Join[
+			(*Input A only:*)Table[ReplacePart[ConstantArray[0., n], {1 -> 1.0}], {20}]
+			(*Table[ReplacePart[ConstantArray[0., n], {2 -> 1.0}], {20}],           (* B Only *)
+			Table[ReplacePart[ConstantArray[0., n], {1 -> 1.0, 2 -> 1.0}], {20}]  (* AB *)*)
+		];
+		rewards = ConstantArray[0., 20];
+		
+		(* Run Simulation A *)
+		history = FoldList[
+			Step[#1, #2[[1]], #2[[2]], 
+				"LeakRate" -> leakRate, 
+				"LearningRate" -> learningRate
+			]&, 
+			brain, 
+			Transpose[{inputs, rewards}]
+		]]//Framed[ListPlot[
+		Transpose[#[[All,"activation"]]],
+		Joined->True,PlotLegends->Range[VertexCount[brain["network"]]],
+		PlotLabel->Style["Neural activations over time (protocol A)\n",14],
+		Frame->True,
+		FrameLabel->{Style["Time",14],Style["Activation",14]},
+		PlotRange->All,ImageSize->Medium,GridLines->{{20,40,60,80,100},None}],
+		Background->White,FrameStyle->Transparent]&,
+		Style["Simulation parameters", {Bold,12}],
+	{{leakRate,0.01},0,1},
+	{{learningRate,0.1},0,1}]
+
+
 (* ::Section::Closed:: *)
 (*Global Dynamics (Protocol A: The Teacher)*)
 
